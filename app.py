@@ -1,5 +1,6 @@
 import streamlit as st
 import random
+import time
 
 # 페이지 설정
 st.set_page_config(
@@ -8,11 +9,93 @@ st.set_page_config(
     layout="centered"
 )
 
-# 제목
-st.title("🍔 오늘 뭐 먹지?")
-st.write("오늘의 기분에 맞는 음식을 추천해드려요!")
+# ---------------------------
+# CSS 꾸미기
+# ---------------------------
+st.markdown("""
+<style>
 
+.main {
+    background-color: #fff8f0;
+}
+
+.title {
+    text-align: center;
+    font-size: 50px;
+    font-weight: bold;
+    color: #ff4b4b;
+}
+
+.subtitle {
+    text-align: center;
+    font-size: 20px;
+    color: #555;
+    margin-bottom: 30px;
+}
+
+.food-card {
+    background: linear-gradient(135deg, #ff9966, #ff5e62);
+    padding: 40px;
+    border-radius: 25px;
+    text-align: center;
+    color: white;
+    font-size: 40px;
+    font-weight: bold;
+    box-shadow: 0px 8px 20px rgba(0,0,0,0.2);
+    animation: fadeIn 1s ease-in-out;
+    margin-top: 20px;
+}
+
+.comment-box {
+    background-color: white;
+    padding: 15px;
+    border-radius: 15px;
+    text-align: center;
+    font-size: 20px;
+    color: #333;
+    margin-top: 15px;
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.stButton>button {
+    width: 100%;
+    height: 60px;
+    font-size: 24px;
+    font-weight: bold;
+    border-radius: 15px;
+    background-color: #ff4b4b;
+    color: white;
+    border: none;
+}
+
+.stButton>button:hover {
+    background-color: #ff1e1e;
+    color: white;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# ---------------------------
+# 제목
+# ---------------------------
+st.markdown('<p class="title">🍽 오늘 뭐 먹지?</p>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">기분에 맞는 음식을 추천해드립니다 😋</p>', unsafe_allow_html=True)
+
+# ---------------------------
 # 기분 리스트
+# ---------------------------
 moods = [
     "😄 신나는 날",
     "😌 편안한 날",
@@ -28,61 +111,79 @@ moods = [
     "🤔 새로운 음식 먹고 싶은 날",
     "🍺 야식 먹고 싶은 날",
     "🧘 건강하게 먹고 싶은 날",
-    "👨‍👩‍👧 가족과 먹는 날",
-    "🎬 혼자 쉬는 날",
-    "💼 바쁜 날",
-    "🚗 드라이브 가는 날",
-    "🏋 운동 후 배고픈 날",
-    "📚 공부하다 배고픈 날"
+    "🎬 혼자 쉬는 날"
 ]
 
-# 음식 추천 데이터
+# ---------------------------
+# 음식 데이터
+# ---------------------------
 food_dict = {
-    "😄 신나는 날": ["치킨", "피자", "햄버거", "떡볶이", "마라탕"],
-    "😌 편안한 날": ["파스타", "샐러드", "리조또", "샌드위치", "우동"],
-    "🥱 귀찮은 날": ["컵라면", "김밥", "편의점 도시락", "토스트", "짜장면"],
-    "😢 우울한 날": ["초콜릿", "아이스크림", "마라탕", "삼겹살", "치즈피자"],
-    "🔥 스트레스 받는 날": ["엽떡", "불닭볶음면", "마라샹궈", "곱창", "닭발"],
-    "🥳 특별한 날": ["스테이크", "초밥", "랍스터", "양갈비", "오마카세"],
-    "💪 든든하게 먹고 싶은 날": ["국밥", "제육볶음", "삼겹살", "돈까스", "갈비탕"],
-    "🌧 비 오는 날": ["파전", "칼국수", "수제비", "짬뽕", "김치전"],
-    "❄ 추운 날": ["부대찌개", "샤브샤브", "곰탕", "어묵탕", "전골"],
-    "☀ 더운 날": ["냉면", "콩국수", "물회", "초밥", "빙수"],
-    "💕 달달한 게 땡기는 날": ["와플", "마카롱", "케이크", "허니브레드", "츄러스"],
-    "🤔 새로운 음식 먹고 싶은 날": ["타코", "쌀국수", "인도커리", "케밥", "포케"],
-    "🍺 야식 먹고 싶은 날": ["족발", "보쌈", "치킨", "라면", "닭강정"],
-    "🧘 건강하게 먹고 싶은 날": ["샐러드", "포케", "닭가슴살", "연어덮밥", "그릭요거트"],
-    "👨‍👩‍👧 가족과 먹는 날": ["삼겹살", "찜닭", "감자탕", "불고기", "치킨"],
-    "🎬 혼자 쉬는 날": ["라면", "돈까스", "햄버거", "덮밥", "우동"],
-    "💼 바쁜 날": ["샌드위치", "김밥", "토스트", "핫도그", "도시락"],
-    "🚗 드라이브 가는 날": ["핫도그", "타코", "버거", "감자튀김", "커피"],
-    "🏋 운동 후 배고픈 날": ["스테이크", "닭가슴살", "포케", "국밥", "덮밥"],
-    "📚 공부하다 배고픈 날": ["떡볶이", "라면", "김밥", "치즈볼", "핫도그"]
+    "😄 신나는 날": ["🍕 피자", "🍔 햄버거", "🍗 치킨", "🌮 타코"],
+    "😌 편안한 날": ["🍝 파스타", "🥗 샐러드", "🍜 우동", "🥪 샌드위치"],
+    "🥱 귀찮은 날": ["🍜 컵라면", "🍙 김밥", "🥡 도시락", "🥪 토스트"],
+    "😢 우울한 날": ["🍫 초콜릿", "🍨 아이스크림", "🥩 삼겹살", "🍕 치즈피자"],
+    "🔥 스트레스 받는 날": ["🌶 엽떡", "🔥 불닭볶음면", "🍖 곱창", "🍲 마라탕"],
+    "🥳 특별한 날": ["🥩 스테이크", "🍣 초밥", "🦞 랍스터", "🍷 파인다이닝"],
+    "💪 든든하게 먹고 싶은 날": ["🍚 국밥", "🍖 제육볶음", "🍛 카레", "🍱 덮밥"],
+    "🌧 비 오는 날": ["🥘 파전", "🍜 칼국수", "🍲 수제비", "🌶 짬뽕"],
+    "❄ 추운 날": ["🍲 부대찌개", "🍢 어묵탕", "🥘 전골", "🍜 라멘"],
+    "☀ 더운 날": ["🍜 냉면", "🥣 콩국수", "🍧 빙수", "🍣 초밥"],
+    "💕 달달한 게 땡기는 날": ["🧇 와플", "🍰 케이크", "🍩 도넛", "🍪 쿠키"],
+    "🤔 새로운 음식 먹고 싶은 날": ["🌮 타코", "🍛 인도커리", "🥙 케밥", "🥗 포케"],
+    "🍺 야식 먹고 싶은 날": ["🍗 치킨", "🍜 라면", "🥓 족발", "🍕 피자"],
+    "🧘 건강하게 먹고 싶은 날": ["🥗 샐러드", "🍅 포케", "🐟 연어덮밥", "🥑 아보카도"],
+    "🎬 혼자 쉬는 날": ["🍜 라면", "🍛 카레", "🍱 덮밥", "🍔 햄버거"]
 }
 
+# ---------------------------
 # 기분 선택
+# ---------------------------
 selected_mood = st.selectbox(
     "오늘 기분을 선택하세요 👇",
     moods
 )
 
+# ---------------------------
 # 추천 버튼
-if st.button("🍀 음식 추천 받기"):
+# ---------------------------
+if st.button("🎲 음식 추천 받기"):
+
+    with st.spinner("맛있는 음식 찾는 중... 🍳"):
+        time.sleep(2)
+
     recommended_food = random.choice(food_dict[selected_mood])
 
-    st.success(f"오늘의 추천 음식은 👉 {recommended_food}")
-
-    # 추가 멘트
     comments = [
-        "맛있게 드세요 😋",
-        "오늘은 이 메뉴 어떠세요? 🍽",
-        "후회 없는 선택입니다 👍",
-        "지금 딱 땡기는 메뉴네요 🔥",
-        "행복한 식사 시간 되세요 💕"
+        "오늘은 이거 먹으면 행복해질 거예요 😋",
+        "완벽한 선택입니다 🔥",
+        "지금 딱 생각나는 메뉴네요 🍽",
+        "맛있게 먹고 힘내세요 💪",
+        "오늘의 행운 음식입니다 🍀"
     ]
 
-    st.info(random.choice(comments))
+    # 풍선 효과
+    st.balloons()
 
-# 하단 문구
-st.write("---")
-st.caption("Made with Streamlit 🍴")
+    # 음식 카드 출력
+    st.markdown(
+        f"""
+        <div class="food-card">
+            🎉 {recommended_food} 🎉
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # 멘트 출력
+    st.markdown(
+        f"""
+        <div class="comment-box">
+            {random.choice(comments)}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+# 하단
+st.write("")
+st.caption("🍴 Made with Streamlit")
